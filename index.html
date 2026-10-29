@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Faster, safer infrastructure PRs</title>
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --card: #ffffff;
+    --ink: #14181f;
+    --muted: #586174;
+    --line: #d9dde5;
+    --accent: #0b6b5c;
+    --accent-soft: #dff1ed;
+    --warn: #9a5b00;
+    --warn-soft: #fbefd9;
+    --bad: #a3261f;
+    --bad-soft: #fbe3e1;
+    --code-bg: #eceff4;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #0f1218; overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--ink); }
+
+  /* The stage is a fixed 1280x720 canvas scaled to fit the window. */
+  #stage { position: absolute; left: 50%; top: 50%; width: 1280px; height: 720px;
+    transform-origin: center center; background: var(--bg); overflow: hidden; }
+  .slide { position: absolute; inset: 0; padding: 56px 72px 64px; display: none; flex-direction: column; }
+  .slide.active { display: flex; }
+
+  h1 { font-size: 56px; line-height: 1.1; margin: 0 0 20px; letter-spacing: -0.02em; }
+  h2 { font-size: 40px; line-height: 1.15; margin: 0 0 8px; letter-spacing: -0.015em; }
+  .point { font-size: 23px; color: var(--muted); margin: 0 0 28px; max-width: 1020px; }
+  .eyebrow { font-size: 15px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 10px; }
+  p, li { font-size: 24px; line-height: 1.4; }
+  ul { margin: 0; padding-left: 28px; }
+  li { margin-bottom: 12px; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
+    padding: 1px 8px; border-radius: 6px; font-size: .92em; }
+  .muted { color: var(--muted); }
+
+  /* Title slide */
+  .title { justify-content: center; }
+  .title h1 { font-size: 64px; max-width: 1050px; }
+  .title .sub { font-size: 28px; color: var(--muted); max-width: 900px; }
+  .title .by { margin-top: 44px; font-size: 22px; }
+
+  /* Layout helpers */
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; flex: 1; min-height: 0; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 26px 30px; }
+  .card h3 { margin: 0 0 12px; font-size: 26px; }
+  .card.yes { border-top: 6px solid var(--accent); }
+  .card.no { border-top: 6px solid var(--line); color: var(--muted); }
+  .shot { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 8px; display: flex; flex-direction: column; min-height: 0; }
+  .shot img { width: 100%; height: 100%; object-fit: contain; object-position: center; min-height: 0; border-radius: 6px; }
+  .shot figcaption { font-size: 17px; color: var(--muted); padding: 8px 6px 2px; }
+  figure { margin: 0; }
+  .shots { display: grid; gap: 22px; flex: 1; min-height: 0; }
+  .shots.two { grid-template-columns: 1fr 1fr; }
+  .shots.one { grid-template-columns: 1fr; }
+  .shots.grid4 { grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 16px 22px; }
+  .shots.grid4 figcaption { padding-top: 4px; font-size: 16px; }
+  .shot img { cursor: zoom-in; }
+  #zoom { position: absolute; inset: 0; background: rgba(15,18,24,.92); display: none; align-items: center; justify-content: center; padding: 32px; z-index: 20; cursor: zoom-out; }
+  #zoom.on { display: flex; }
+  #zoom img { max-width: 100%; max-height: 100%; border-radius: 8px; }
+  .shot .frame { flex: 1; min-height: 0; overflow: hidden; display: flex; }
+
+  /* Flow diagrams */
+  .flow { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 6px; margin: 6px 0 26px; }
+  .step { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 12px 18px; font-size: 21px; }
+  .step.bad { background: var(--bad-soft); border-color: #e4b3af; }
+  .step.good { background: var(--accent-soft); border-color: #a9d6cd; }
+  .step.warn { background: var(--warn-soft); border-color: #e8cf9f; }
+  .arrow { font-size: 24px; color: var(--muted); padding: 0 4px; }
+  .side { font-size: 21px; color: var(--muted); margin-top: -6px; margin-bottom: 18px; }
+  .label { font-size: 16px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); font-weight: 700; margin: 10px 0 8px; }
+
+  .three-up { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; margin-top: 8px; }
+  .three-up .card { padding: 22px 24px; }
+  .num { display: inline-block; width: 36px; height: 36px; line-height: 36px; border-radius: 50%; background: var(--accent); color: #fff; text-align: center; font-weight: 700; font-size: 20px; margin-bottom: 10px; }
+  .three-up p { margin: 0; font-size: 22px; }
+  .tickets { font-size: 17px; color: var(--muted); margin-top: 12px; }
+
+  .pill { display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: 17px; font-weight: 600; background: var(--accent-soft); color: var(--accent); margin-right: 8px; }
+  .pill.warn { background: var(--warn-soft); color: var(--warn); }
+  .cue { margin-top: 14px; padding: 12px 18px; border-left: 6px solid var(--warn); background: var(--warn-soft); font-size: 20px; border-radius: 0 10px 10px 0; }
+  .qa-list li { font-size: 22px; }
+
+  /* Chrome */
+  #bar { position: absolute; left: 0; bottom: 0; height: 6px; background: var(--accent); width: 0; transition: width .2s; }
+  #count { position: absolute; right: 28px; bottom: 18px; font-size: 16px; color: var(--muted); }
+  #timer { position: absolute; left: 28px; bottom: 18px; font-size: 16px; color: var(--muted); font-variant-numeric: tabular-nums; display: none; }
+  #notes { position: fixed; left: 0; right: 0; bottom: 0; max-height: 34vh; overflow: auto; background: rgba(15,18,24,.96); color: #e8ebf1;
+    padding: 18px 28px 22px; font-size: 18px; line-height: 1.5; display: none; z-index: 10; }
+  #notes.on { display: block; }
+  #notes b { color: #8fd6c7; }
+  aside.notes { display: none; }
+  #help { position: fixed; top: 12px; right: 14px; font-size: 13px; color: #9aa3b5; z-index: 11; }
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 1. Title -->
+  <section class="slide title" data-time="0:30">
+    <div class="eyebrow">Engineering Show &amp; Tell</div>
+    <h1>Faster, safer infrastructure PRs</h1>
+    <div class="sub">Apply and deploy what you reviewed, check only what changed, deploy by comment.</div>
+    <div class="by">Danny Molnar &middot; AppOps, part of IDE (Infrastructure and Development Enablement)</div>
+    <aside class="notes"><b>Say:</b> One sentence on who I am. This is about how we deploy infrastructure. Four sentences from now you will know if it concerns you.</aside>
+  </section>
+
+  <!-- 2. Who this is for -->
+  <section class="slide" data-time="1:00">
+    <div class="eyebrow">Scope</div>
+    <h2>Who this is for</h2>
+    <p class="point">Infrastructure repos only. Nothing changes for a repo until it opts in.</p>
+    <div class="cols">
+      <div class="card yes">
+        <h3>Affected</h3>
+        <ul>
+          <li><code>ts-*</code> repos: ts-general, ts-security, ts-ai and more</li>
+          <li><code>/infra</code> folders in service repos</li>
+          <li>AWS infrastructure through Terraspace and GitHub Actions</li>
+        </ul>
+      </div>
+      <div class="card no">
+        <h3>Not affected</h3>
+        <ul>
+          <li>Application repos</li>
+          <li>Their own CI/CD and release flow</li>
+        </ul>
+        <p style="margin-top:28px;color:var(--ink)"><span class="pill">Opt-in</span>One PR per repo. Revert it to go back.</p>
+      </div>
+    </div>
+    <aside class="notes"><b>Say:</b> If you merge a change that ends up as AWS resources through one of these repos, this is for you. Everything is opt-in per repo: one PR to opt in, revert it to roll back. We (IDE) open the opt-in PRs, repo teams do not need to do anything.</aside>
+  </section>
+
+  <!-- 3. Before -->
+  <section class="slide" data-time="1:30">
+    <div class="eyebrow">Before</div>
+    <h2>Reviewing and deploying were separate work</h2>
+    <p class="point">Every step repeated work the PR had already done.</p>
+    <div class="label">The normal path</div>
+    <div class="flow">
+      <span class="step bad">PR: plan every stack</span><span class="arrow">&rarr;</span>
+      <span class="step">Review</span><span class="arrow">&rarr;</span>
+      <span class="step">Merge</span><span class="arrow">&rarr;</span>
+      <span class="step bad">Plan again</span><span class="arrow">&rarr;</span>
+      <span class="step">Approve</span><span class="arrow">&rarr;</span>
+      <span class="step">Apply</span>
+    </div>
+    <div class="label">Want to try it before merging?</div>
+    <div class="flow">
+      <span class="step warn">Leave the PR</span><span class="arrow">&rarr;</span>
+      <span class="step warn">Actions tab</span><span class="arrow">&rarr;</span>
+      <span class="step warn">Manual Command</span><span class="arrow">&rarr;</span>
+      <span class="step warn">Pick branch, environments, stacks</span>
+    </div>
+    <ul style="margin-top:14px">
+      <li>The plan you reviewed is not the plan that gets applied</li>
+      <li>A one-stack change still plans everything</li>
+    </ul>
+    <aside class="notes"><b>Say:</b> After merge it is planned again, so what is applied is not exactly what was reviewed. A one-stack change still plans every stack. And trying a change before merge means leaving the PR for the Actions tab.</aside>
+  </section>
+
+  <!-- 4. After -->
+  <section class="slide" data-time="1:30">
+    <div class="eyebrow">After</div>
+    <h2>Three changes, shipped together</h2>
+    <p class="point">Opt-in workflows plus a PR comment command.</p>
+    <div class="three-up">
+      <div class="card"><div class="num">1</div><h3>Plan only what changed</h3><p>The PR plan covers the stacks it touches. Docs-only PRs plan nothing.</p><div class="tickets">APPOPS-1259</div></div>
+      <div class="card"><div class="num">2</div><h3>Apply what you reviewed</h3><p>The reviewed plan is applied on merge, through the usual approvals. No second plan.</p><div class="tickets">APPOPS-1258</div></div>
+      <div class="card"><div class="num">3</div><h3>Deploy by comment</h3><p>Comment <code>/deploy development</code> on the PR. Same approval gate.</p><div class="tickets">APPOPS-1260</div></div>
+    </div>
+    <p class="muted" style="margin-top:26px;font-size:20px">Small extra: the bot pushes the <code>tofu fmt</code> commit for you (APPOPS-661).</p>
+    <aside class="notes"><b>Say:</b> One sentence each, the next three slides show them. Mention auto-format as a one-liner: the bot pushes the format commit to the PR branch.</aside>
+  </section>
+
+  <!-- 5. Plan only what changed -->
+  <section class="slide" data-time="2:30">
+    <div class="eyebrow">In practice 1 of 3</div>
+    <h2>A PR plans what it changes</h2>
+    <p class="point">The plan comment lists the changed stacks and ends with how to deploy them.</p>
+    <div class="shots two">
+      <figure class="shot"><div class="frame"><img src="assets/plan-footer.png" alt="Plan comment with the Deploy footer"></div><figcaption>Plan comment with the Deploy footer</figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="assets/nothing-to-plan.png" alt="A PR with nothing to plan"></div><figcaption>Docs-only PR: nothing to plan, about 1.5 minutes</figcaption></figure>
+    </div>
+    <div class="cue"><b>Cue:</b> start the real run now. In a second window, comment <code>/deploy development</code> on the prepared tm-testing PR.</div>
+    <aside class="notes"><b>Say:</b> Show the stack list in the comment, then the footer. Contrast: a docs-only PR plans nothing. <b>While this slide is up:</b> start the real run in tm-testing in a second window (comment /deploy development on the prepared demo PR).</aside>
+  </section>
+
+  <!-- 6. /deploy -->
+  <section class="slide" data-time="3:00">
+    <div class="eyebrow">In practice 2 of 3</div>
+    <h2>Deploy from the PR</h2>
+    <p class="point">Try the change in development without leaving the PR.</p>
+    <div class="shots grid4">
+      <figure class="shot"><div class="frame"><img src="assets/deploy-replies.png" alt="Engineer comments and bot replies"></div><figcaption>Comment and bot reply</figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="assets/dependent-stacks.png" alt="Dependent stacks: the bot names the waiting ones"></div><figcaption>Dependent stacks: the bot names the waiting ones</figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="assets/rejected-1.png" alt="A rejected request"></div><figcaption>Rejected requests get a short reply</figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="assets/superseded.png" alt="Previous dispatch marked as superseded"></div><figcaption>A new push marks earlier replies as superseded</figcaption></figure>
+    </div>
+    <aside class="notes"><b>Say:</b> Write access is required. Closed, merged and fork PRs are refused. A new push marks earlier replies as superseded. Stacks that depend on each other deploy in layers; the bot names the waiting ones and you run /deploy again. Same environment approval as before.</aside>
+  </section>
+
+  <!-- 7. Merge applies reviewed plan -->
+  <section class="slide" data-time="2:30">
+    <div class="eyebrow">In practice 3 of 3</div>
+    <h2>Merge applies the plan you reviewed</h2>
+    <p class="point">No second plan. It goes through the same environment approvals.</p>
+    <div class="cols" style="grid-template-columns: 1.25fr 1fr; flex:1; min-height:0">
+      <figure class="shot"><div class="frame"><img src="assets/approval-gate.png" alt="The approval gate"></div><figcaption>The approval gate</figcaption></figure>
+      <div class="card">
+        <h3>It plans again only when it must</h3>
+        <ul>
+          <li>Main changed the same stacks</li>
+          <li>The plan expired</li>
+          <li>The PR changed <code>.github/</code></li>
+        </ul>
+        <p class="muted" style="font-size:20px">Then you approve the new plan.</p>
+      </div>
+    </div>
+    <div class="cue"><b>Cue:</b> switch to the real run from slide 5. Approve at the gate here, then show it applying.</div>
+    <aside class="notes"><b>Say:</b> The saved plan from the PR is applied. The Up run header links back to the PR with a hover card. <b>Switch to the real run:</b> approve at the gate and show where it is (applying or done).</aside>
+  </section>
+
+  <!-- 8. Stale -->
+  <section class="slide" data-time="2:00">
+    <div class="eyebrow">When it goes wrong, on purpose</div>
+    <h2>"Saved plan is stale"</h2>
+    <p class="point">The pipeline refuses to apply a plan it no longer trusts. The fix is one click.</p>
+    <div class="shots two">
+      <figure class="shot"><div class="frame"><img src="assets/stale-failed.png" alt="First attempt: the up job fails"></div><figcaption>First attempt: the Up job fails</figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="assets/rerun-green.png" alt="After Re-run all jobs"></div><figcaption>Re-run all jobs: planned again, nothing left to apply</figcaption></figure>
+    </div>
+    <p style="margin-top:16px;font-size:21px"><span class="pill warn">Use</span><b>Re-run all jobs</b>, not <i>Re-run failed jobs</i> (that applies the same stale plan again). Seen for real on ts-ai after a manual change in staging.</p>
+    <aside class="notes"><b>Say:</b> After a /deploy, that environment's saved plan is outdated at merge, so the merge run waits at the gate and then fails once. Re-run all jobs plans again, finds nothing left, and finishes green. The same happens when someone changes the stack outside the pipeline between plan and merge (ts-ai #286).</aside>
+  </section>
+
+  <!-- 9. What teams notice -->
+  <section class="slide" data-time="1:30">
+    <div class="eyebrow">Good to know</div>
+    <h2>What teams will notice</h2>
+    <p class="point">A short, honest list.</p>
+    <ul>
+      <li>An <b>extra approval</b> when main changed since the review</li>
+      <li>A <b>stale plan</b> after a <code>/deploy</code>: Re-run all jobs once</li>
+      <li><b>Dependent stacks</b> need a second <code>/deploy</code></li>
+      <li>The bot may push a format commit: <code>git pull</code> before your next push</li>
+      <li>The <code>infra:no_changes</code> label has <b>no effect</b>: PRs that do not touch infrastructure plan nothing anyway</li>
+    </ul>
+    <aside class="notes"><b>Say:</b> Go through quickly. The label point matters because people use it today: in the new workflows non-infrastructure PRs plan nothing on their own.</aside>
+  </section>
+
+  <!-- 10. Opt in -->
+  <section class="slide" data-time="1:00">
+    <div class="eyebrow">Adopting it</div>
+    <h2>How a repo opts in</h2>
+    <p class="point">One PR per repo, opened by IDE.</p>
+    <div class="three-up">
+      <div class="card"><div class="num">1</div><h3>Plan caller</h3><p>Calls the new plan workflow with <code>deploy_from_comment: true</code></p></div>
+      <div class="card"><div class="num">2</div><h3>Merge caller</h3><p>Calls the new Up workflow with the merged PR number</p></div>
+      <div class="card"><div class="num">3</div><h3>pr-deploy.yml</h3><p>Turns on <code>/deploy</code> for the repo</p></div>
+    </div>
+    <p style="margin-top:28px"><span class="pill">Rollback</span>Revert the repo's opt-in PR. Repos that have not opted in are unaffected.</p>
+    <aside class="notes"><b>Say:</b> The ts-general opt-in PR (#370) is the template for the others. Repo teams do not need to do anything. PRs that were open when a repo switched were planned by the old workflow and are planned again on merge, with a new approval.</aside>
+  </section>
+
+  <!-- 11. Optional: under the hood -->
+  <section class="slide" data-time="3:00" data-optional="1">
+    <div class="eyebrow">Under the hood <span class="pill warn" style="margin-left:10px">optional</span></div>
+    <h2>It is tested like code</h2>
+    <p class="point">Plan reuse and re-plan rules, and the test harness behind them.</p>
+    <div class="cols">
+      <div class="card"><h3>Plan reuse</h3><ul><li>Saved plan from the PR</li><li>When main moved or the plan expired, plan again</li><li>Dependent stacks defer and re-plan</li></ul></div>
+      <div class="card"><h3>Tests</h3><ul><li>Script tests against a fake Terraspace</li><li>Workflow tests for the job structure</li><li>Real runs in a test repo before merge</li></ul></div>
+    </div>
+    <aside class="notes"><b>Miklos's slot.</b> Replace the placeholder content with his material. If he does not join, press O to skip this slide or cut it.</aside>
+  </section>
+
+  <!-- 12. Rollout -->
+  <section class="slide" data-time="1:00">
+    <div class="eyebrow">Rollout</div>
+    <h2>Live today, and where to follow it</h2>
+    <p class="point">Repos opt in gradually, starting with our own.</p>
+    <div class="cols">
+      <div class="card yes">
+        <h3>Live</h3>
+        <ul><li><code>ts-general</code></li><li><code>ts-ai</code></li></ul>
+        <h3 style="margin-top:18px">Next</h3>
+        <ul><li><code>ts-security</code>, then the other <code>ts-*</code> repos in small batches</li></ul>
+      </div>
+      <div class="card">
+        <h3>Questions or something looks off</h3>
+        <ul><li>Slack: <code>#proj-iac-pipeline-velocity-improvements</code></li><li>Usage guide: Confluence, "IaC Pipeline Velocity Improvements"</li></ul>
+      </div>
+    </div>
+    <aside class="notes"><b>Update on the day:</b> check the state in the runbook (COPS page 4317249537, Status at a glance) and adjust the Live and Next lists.</aside>
+  </section>
+
+  <!-- 13. Q&A -->
+  <section class="slide" data-time="5:00">
+    <div class="eyebrow">Questions</div>
+    <h2>Q&amp;A</h2>
+    <ul class="qa-list" style="margin-top:14px">
+      <li class="muted">Can I opt my repo in? IDE opens the PR; ask in the channel.</li>
+      <li class="muted">What about <code>ts-dns</code>? It stays on the old plan for now; <code>/deploy</code> works there too.</li>
+      <li class="muted">Can I skip the approval? No, it is the same gate as before.</li>
+      <li class="muted">What about PRs open when the repo switches? They are planned again on merge, with a new approval.</li>
+    </ul>
+    <aside class="notes"><b>Ready answers</b> are on the slide, in case a question matches. Also: no Slack message after a deploy in the new workflows yet (not scoped).</aside>
+  </section>
+
+  <div id="zoom"><img alt=""></div>
+  <div id="timer"></div>
+  <div id="count"></div>
+  <div id="bar"></div>
+</div>
+
+<div id="notes"></div>
+<div id="help">&larr; &rarr; navigate &middot; click a screenshot to zoom &middot; N notes &middot; T timer &middot; F fullscreen &middot; O skip optional &middot; ? hide hint</div>
+
+<script>
+(function () {
+  var stage = document.getElementById('stage');
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var notesEl = document.getElementById('notes');
+  var countEl = document.getElementById('count');
+  var barEl = document.getElementById('bar');
+  var timerEl = document.getElementById('timer');
+  var helpEl = document.getElementById('help');
+  var skipOptional = new URLSearchParams(location.search).get('optional') === '0';
+  var cur = 0, timerStart = null, timerOn = false;
+
+  function visible(i) { return !(skipOptional && slides[i].dataset.optional); }
+
+  function fit() {
+    var s = Math.min(window.innerWidth / 1280, window.innerHeight / 720);
+    stage.style.transform = 'translate(-50%, -50%) scale(' + s + ')';
+  }
+
+  function show(i) {
+    if (i < 0 || i >= slides.length) return;
+    cur = i;
+    slides.forEach(function (s, k) { s.classList.toggle('active', k === i); });
+    var vis = slides.map(function (_, k) { return k; }).filter(visible);
+    countEl.textContent = (vis.indexOf(i) + 1) + ' / ' + vis.length + '  ·  ' + (slides[i].dataset.time || '');
+    barEl.style.width = ((vis.indexOf(i) + 1) / vis.length * 100) + '%';
+    var n = slides[i].querySelector('aside.notes');
+    notesEl.innerHTML = n ? n.innerHTML : '';
+    history.replaceState(null, '', '#' + (i + 1));
+  }
+
+  function move(d) {
+    var i = cur + d;
+    while (i >= 0 && i < slides.length && !visible(i)) i += d;
+    if (i >= 0 && i < slides.length) show(i);
+  }
+
+  function tick() {
+    if (!timerOn) return;
+    var t = Math.floor((Date.now() - timerStart) / 1000);
+    timerEl.textContent = String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
+  }
+
+  document.addEventListener('keydown', function (e) {
+    var k = e.key;
+    if (k === 'ArrowRight' || k === 'PageDown' || k === ' ') { e.preventDefault(); move(1); }
+    else if (k === 'ArrowLeft' || k === 'PageUp') { e.preventDefault(); move(-1); }
+    else if (k === 'Home') show(0);
+    else if (k === 'End') show(slides.length - 1);
+    else if (k === 'n' || k === 'N') notesEl.classList.toggle('on');
+    else if (k === 't' || k === 'T') {
+      timerOn = !timerOn; timerEl.style.display = timerOn ? 'block' : 'none';
+      if (timerOn && !timerStart) timerStart = Date.now();
+    }
+    else if (k === 'f' || k === 'F') {
+      if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen();
+    }
+    else if (k === 'o' || k === 'O') { skipOptional = !skipOptional; show(visible(cur) ? cur : Math.max(0, cur - 1)); }
+    else if (k === 'b' || k === 'B') { stage.style.visibility = stage.style.visibility === 'hidden' ? 'visible' : 'hidden'; }
+    else if (k === '?') { helpEl.style.display = helpEl.style.display === 'none' ? 'block' : 'none'; }
+  });
+
+  var zoomEl = document.getElementById('zoom');
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') zoomEl.classList.remove('on'); });
+
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('#notes')) return;
+    if (zoomEl.classList.contains('on')) { zoomEl.classList.remove('on'); return; }
+    if (e.target.matches('.shot img')) {
+      zoomEl.querySelector('img').src = e.target.src;
+      zoomEl.classList.add('on');
+      return;
+    }
+    move(e.clientX < window.innerWidth / 3 ? -1 : 1);
+  });
+
+  window.addEventListener('resize', fit);
+  setInterval(tick, 500);
+  fit();
+  var start = parseInt(location.hash.slice(1), 10);
+  show(start >= 1 && start <= slides.length ? start - 1 : 0);
+})();
+</script>
+</body>
+</html>

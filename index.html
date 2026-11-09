@@ -39,6 +39,9 @@
   code { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; background: var(--code-bg);
     padding: 1px 8px; border-radius: 6px; font-size: .92em; }
   .muted { color: var(--muted); }
+  ul.notice li { font-size: 21px; line-height: 1.35; margin-bottom: 14px; }
+  ul.notice li b code { padding: 0 4px; }
+  a { color: var(--accent); text-underline-offset: 3px; }
 
   /* Title slide */
   .title { justify-content: center; }
@@ -242,30 +245,30 @@
   <section class="slide" data-time="1:30">
     <div class="eyebrow">Good to know</div>
     <h2>What teams will notice</h2>
-    <p class="point">A short, honest list.</p>
-    <ul>
-      <li>An <b>extra approval</b> when main changed since the review</li>
-      <li>A <b>stale plan</b> after a <code>/deploy</code>: Re-run all jobs once</li>
-      <li><b>Dependent stacks</b> need a second <code>/deploy</code></li>
-      <li>The bot may push a format commit: <code>git pull</code> before your next push</li>
-      <li>The <code>infra:no_changes</code> label has <b>no effect</b>: PRs that do not touch infrastructure plan nothing anyway</li>
+    <p class="point">A short, honest list: what you will see, why, and what to do.</p>
+    <ul class="notice">
+      <li><b>An extra approval when main moved.</b> If someone changed the same stacks after your review, the saved plan is no longer safe. It is planned again and you approve the new plan.</li>
+      <li><b>A stale plan after <code>/deploy</code>.</b> Deploying from the branch changes the environment, so the saved plan is outdated at merge. The run fails once: click <i>Re-run all jobs</i> and it finishes green.</li>
+      <li><b>Dependent stacks need a second <code>/deploy</code>.</b> Stacks that read each other's outputs deploy in layers. The bot names the waiting ones; run <code>/deploy</code> again once the first layer is applied.</li>
+      <li><b>A format commit from the bot.</b> It may push a <code>tofu fmt</code> commit to your PR branch. Run <code>git pull</code> before your next push.</li>
+      <li><b>The <code>infra:no_changes</code> label does nothing.</b> You no longer need it: PRs that do not touch infrastructure plan nothing on their own.</li>
     </ul>
-    <aside class="notes"><b>Say:</b> Go through quickly. The label point matters because people use it today: in the new workflows non-infrastructure PRs plan nothing on their own.</aside>
+    <aside class="notes"><b>Say:</b> The bold part is the what, the rest is the why and what to do. Read the bold ones and let people ask about any. The label point matters because people use it today: in the new workflows non-infrastructure PRs plan nothing on their own.</aside>
   </section>
 
   <!-- 10. Opt in -->
   <section class="slide" data-time="1:00">
     <div class="eyebrow">Adopting it</div>
     <h2>How a repo opts in</h2>
-    <p class="point">One PR per repo, opened by AppOps.</p>
+    <p class="point">One PR per repo, opened by AppOps. Nothing for the repo team to do.</p>
     <div class="three-up">
-      <div class="card"><div class="num">1</div><h3>Plan caller</h3><p>Calls the new plan workflow with <code>deploy_from_comment: true</code></p></div>
-      <div class="card"><div class="num">2</div><h3>Merge caller</h3><p>Calls the new Up workflow with the merged PR number</p></div>
-      <div class="card"><div class="num">3</div><h3>pr-deploy.yml</h3><p>Turns on <code>/deploy</code> for the repo</p></div>
+      <div class="card"><div class="num">1</div><h3>We open the PR</h3><p>It switches the repo to the new workflows.</p></div>
+      <div class="card"><div class="num">2</div><h3>You review and merge</h3><p>A normal PR with a normal code owner review.</p></div>
+      <div class="card"><div class="num">3</div><h3>The next PR uses it</h3><p>Plan only what changed, <code>/deploy</code>, apply the reviewed plan.</p></div>
     </div>
-    <p style="margin-top:28px"><span class="pill">Rollback</span>Revert the repo's opt-in PR. Repos that have not opted in are unaffected.</p>
-    <p style="margin-top:14px;font-size:21px"><span class="pill">Also bundled</span>The <b>exclude-stacks</b> workflow: dispatch it to add or remove stacks in an environment's exclude list, as a PR. Most platform-engineering <code>ts-*</code> repos already have it; ExpSquads repos get it with their opt-in PR.</p>
-    <aside class="notes"><b>Say:</b> The ts-general opt-in PR (#370) is the template for the others. Repo teams do not need to do anything. <b>One extra, a later addition:</b> the exclude-stacks workflow already exists in most platform-engineering ts-* repos but not in the ExpSquads org, and since it is easy to bundle, those repos get it in the same PR (APPOPS-600). PRs that were open when a repo switched were planned by the old workflow and are planned again on merge, with a new approval.</aside>
+    <p style="margin-top:28px"><span class="pill">Rollback</span>Revert that PR and the repo is back on the old workflows. Repos that have not opted in are unaffected.</p>
+    <p style="margin-top:14px;font-size:21px"><span class="pill">Also bundled</span>The <b>exclude-stacks</b> workflow, which some repos already have. ExpSquads repos get it in the same PR.</p>
+    <aside class="notes"><b>Say:</b> Repo teams do not need to do anything beyond the normal review. <b>Details if asked:</b> the PR adds the v2 plan caller (with <code>deploy_from_comment: true</code>), the merge caller (the new Up workflow with the merged PR number) and <code>pr-deploy.yml</code>, which turns on <code>/deploy</code>. The ts-general PR (#370) is the template. <b>One extra, a later addition:</b> the exclude-stacks workflow (adds or removes stacks in an environment's exclude list, as a PR) already exists in most platform-engineering ts-* repos but not in the ExpSquads org, and since it is easy to bundle, those repos get it in the same PR (APPOPS-600). PRs that were open when a repo switched were planned by the old workflow and are planned again on merge, with a new approval.</aside>
   </section>
 
   <!-- 11. Optional: under the hood -->
@@ -294,7 +297,7 @@
       </div>
       <div class="card">
         <h3>Questions or something looks off</h3>
-        <ul><li>Slack: <code>#proj-iac-pipeline-velocity-improvements</code></li><li>Usage guide: Confluence, "IaC Pipeline Velocity Improvements"</li></ul>
+        <ul><li>Slack: <code>#proj-iac-pipeline-velocity-improvements</code></li><li>Usage guide with screenshots: <a href="https://sosafegmbh.atlassian.net/wiki/spaces/COPS/pages/4247486574/IaC+Pipeline+Velocity+Improvements+New+features+and+usage+guide" target="_blank" rel="noopener">IaC Pipeline Velocity Improvements</a> (Confluence)</li></ul>
       </div>
     </div>
     <aside class="notes"><b>State as of the runbook of 6 Nov</b> (6 repos plus the template; about 24 of 30 not started). <b>Update on the day:</b> check COPS page 4317249537, Status at a glance, and adjust the Live and Next lists.</aside>
@@ -388,7 +391,7 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') zoomEl.classList.remove('on'); });
 
   document.addEventListener('click', function (e) {
-    if (e.target.closest('#notes')) return;
+    if (e.target.closest('#notes') || e.target.closest('a')) return;
     if (zoomEl.classList.contains('on')) { zoomEl.classList.remove('on'); return; }
     if (e.target.matches('.shot img')) {
       zoomEl.querySelector('img').src = e.target.src;

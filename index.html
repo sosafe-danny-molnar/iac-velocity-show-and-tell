@@ -267,7 +267,8 @@
       <div class="card"><div class="num">3</div><h3>pr-deploy.yml</h3><p>Turns on <code>/deploy</code> for the repo</p></div>
     </div>
     <p style="margin-top:28px"><span class="pill">Rollback</span>Revert the repo's opt-in PR. Repos that have not opted in are unaffected.</p>
-    <aside class="notes"><b>Say:</b> The ts-general opt-in PR (#370) is the template for the others. Repo teams do not need to do anything. PRs that were open when a repo switched were planned by the old workflow and are planned again on merge, with a new approval.</aside>
+    <p style="margin-top:14px;font-size:21px"><span class="pill">Also bundled</span>The <b>exclude-stacks</b> workflow: dispatch it to add or remove stacks in an environment's exclude list, as a PR. Most platform-engineering <code>ts-*</code> repos already have it; ExpSquads repos get it with their opt-in PR.</p>
+    <aside class="notes"><b>Say:</b> The ts-general opt-in PR (#370) is the template for the others. Repo teams do not need to do anything. <b>One extra, a later addition:</b> the exclude-stacks workflow already exists in most platform-engineering ts-* repos but not in the ExpSquads org, and since it is easy to bundle, those repos get it in the same PR (APPOPS-600). PRs that were open when a repo switched were planned by the old workflow and are planned again on merge, with a new approval.</aside>
   </section>
 
   <!-- 11. Optional: under the hood -->

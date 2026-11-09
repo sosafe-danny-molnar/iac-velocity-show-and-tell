@@ -229,7 +229,7 @@
   <section class="slide" data-time="2:00">
     <div class="eyebrow">When it goes wrong, on purpose</div>
     <h2>"Saved plan is stale"</h2>
-    <p class="point">The pipeline refuses to apply a plan it no longer trusts. The fix is one click.</p>
+    <p class="point">It happens when the stack changed after the PR plan was made: you deployed it with <code>/deploy</code> before merging, or someone changed it outside the pipeline. The pipeline refuses to apply the old plan, and the fix is one click.</p>
     <div class="shots two">
       <figure class="shot"><div class="frame"><img src="assets/stale-failed.png" alt="First attempt: the up job fails"></div><figcaption>First attempt: the Up job fails</figcaption></figure>
       <figure class="shot"><div class="frame"><img src="assets/rerun-green.png" alt="After Re-run all jobs"></div><figcaption>Re-run all jobs: planned again, nothing left to apply</figcaption></figure>

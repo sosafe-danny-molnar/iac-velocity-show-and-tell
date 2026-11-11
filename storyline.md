@@ -4,7 +4,9 @@ Engineering Show & Tell. Slot about 30 min including Q&A; talk about 20 min, Q&A
 
 Audience: all of engineering. Many have never touched a `ts-*` repo, so every term is explained once and the demo carries the middle.
 
-Demo approach: no live demo. Slides 5 to 7 use screenshots from the usage guide (COPS 4247486574). One real run is started in tm-testing at the start of slide 5 (comment `/deploy development` on a prepared PR) and is shown at the end of slide 7, so the audience sees a real run that was started during the talk.
+Demo approach (11 Nov): no live run, probably. Slides 5 to 8 use screenshots (usage guide COPS 4247486574, plus the new plan comment footer on slide 5). The earlier plan to start a real tm-testing run on slide 5 and show it on slide 7 is dropped; the demo stacks (tm-testing draft PR #328) are no longer needed unless screenshots are recaptured.
+
+Framing (11 Nov): merge and approve is the normal way to deploy; `/deploy` is for testing in development and emergencies, because deploying before merge makes the environment drift from main. The announcement said "deploy by comment", so slide 4 sets the frame.
 
 Not in the talk: the earlier scoped-planning revert. The talk presents the v2 workflows and `/deploy` only.
 
@@ -33,24 +35,24 @@ Conventions: **Point** = the one thing the audience should take away. **Visual**
 
 **Point:** three improvements, shipped together (APPOPS-1258, 1259, 1260).
 **Visual:** the same flow, with the three changes highlighted: plan only what changed; apply the reviewed plan on merge; `/deploy <env>` comment.
-**Say:** keep it to one sentence each; the demo shows them. Mention auto-format (the bot pushes the `tofu fmt` commit) as a small extra, one line.
+**Say:** keep it to one sentence each; the next slides show them. Set the frame: the normal path is merge plus the approved deployment; `/deploy` is for testing and emergencies. Mention auto-format (the bot pushes the `tofu fmt` commit) as a small extra, one line.
 
 ## 5. Demo 1: a PR plans what it changes (2:30)
 
 **Point:** the plan covers only the stacks the PR touches, and the PR tells you how to deploy.
-**Visual (screenshots):** plan comment with the changed stacks and the "Deploy to `<env>`" footer. Quick contrast: a docs-only PR plans nothing (about 1.5 min).
-**Say:** show the stack list in the comment, then the footer. While this slide is up, start the real run in tm-testing in a second window (comment `/deploy development` on the prepared PR).
+**Visual (screenshots):** plan comment with the changed stacks and the footer "How to test before merging (exceptions only)", expanded. Quick contrast: a docs-only PR plans nothing (about 1.5 min).
+**Say:** show the stack list in the comment, then the footer.
 
-## 6. Demo 2: `/deploy` from the PR (3:00)
+## 6. Demo 2: try it from the PR with `/deploy` (3:00)
 
-**Point:** try the change in development without leaving the PR.
+**Point:** test a change in development without leaving the PR; shipping still goes through merge. Use sparingly: testing and emergencies.
 **Visual (screenshots):** comment `/deploy development`; the bot reply with the stacks; the approval gate; the layered case where the bot names the waiting stacks; a rejected request.
 **Say:** write access required, closed and fork PRs refused, a new push marks earlier replies as superseded. Same approval gate as before.
 
-## 7. Demo 3: merge applies the reviewed plan (2:30)
+## 7. Demo 3: merge applies the reviewed plan, the normal path (2:30)
 
 **Point:** what you reviewed is what gets applied; no second plan.
-**Visual (screenshots, then the real run):** merge; the Up run applies the saved plan through the gates; the run header links back to the PR (hover card). End by switching to the run started on slide 5 and showing where it is (waiting at the gate or applied).
+**Visual (screenshots):** merge; the Up run applies the saved plan through the gates; the run header links back to the PR (hover card).
 **Say:** if main changed the same stacks, the plan expired, or the PR changed `.github/`, it plans again and asks for a new approval.
 
 ## 8. When it plans again, or goes stale (2:00)
@@ -64,11 +66,11 @@ Conventions: **Point** = the one thing the audience should take away. **Visual**
 **Point:** a short, honest list.
 **Visual:** five bullets. Extra approval when main changed since the review. Stale plan after `/deploy` (slide 8). `git pull` after a bot format commit. Dependent stacks need a second `/deploy`. The `infra:no_changes` label has no effect: PRs that do not touch infrastructure plan nothing anyway.
 
-## 10. How a repo opts in (1:00)
+## 10. How a repo opts in (0:45)
 
-**Point:** one PR, easy to revert.
+**Point:** AppOps opens and merges one PR per repo; nothing for repo teams to do. Rollback is easy (revert the PR). The exclude-stacks workflow is bundled for ExpSquads repos.
 **Visual:** the ts-general opt-in PR (#370) as the template: v2 callers, the flag, `pr-deploy.yml`.
-**Say:** the platform team opens these PRs; repo teams do not need to do anything.
+**Say:** keep it short. Technical details (callers, `pr-deploy.yml`, ts-general template) are in the speaker notes.
 
 ## 11. Optional, Miklos: under the hood (about 3:00)
 
@@ -83,8 +85,8 @@ Conventions: **Point** = the one thing the audience should take away. **Visual**
 ## 13. Q&A (5:00)
 
 Likely questions, with the answer ready:
-- Can I opt my repo in? The platform team opens the PR; ask in the channel.
-- Does it work for ts-dns? It stays on the legacy plan; `/deploy` works there too.
+- Should I deploy every change with `/deploy`? No. Merge and approve is the default; `/deploy` is for testing in development and emergencies.
+- Can I opt my repo in? AppOps opens the PR; ask in the channel.
 - What if I do not want to wait for the approval? The gate is unchanged; it is the same approval as before.
 - What happens to open PRs when the repo opts in? They were planned by the old workflow and are planned again on merge, with a new approval.
 - Is there a Slack message after deploy? Not in v2 (not scoped yet).
@@ -93,14 +95,14 @@ Likely questions, with the answer ready:
 
 ## Timing
 
-Talk: 0:30 + 1:00 + 1:30 + 1:30 + 2:30 + 3:00 + 2:30 + 2:00 + 1:30 + 1:00 + 1:00 = 18:00. Q&A 5:00. Optional Miklos 3:00. Total with everything: 26:00. Cut slide 9 or 11 first if the dry run runs long.
+Talk: 0:30 + 1:00 + 1:30 + 1:30 + 2:30 + 3:00 + 2:30 + 2:00 + 1:30 + 0:45 + 1:00 = 17:45. Q&A 5:00. Optional Miklos 3:00. Total with everything: 26:00. Cut slide 9 or 11 first if the dry run runs long.
 
-## Demo prep (open)
+## Demo prep (mostly obsolete since 11 Nov, no live run)
 
 - tm-testing PR with two or three stacks, one dependent on another (fixture stacks `appops1258_base`, `appops1258_dep` and friends exist), prepared before the talk with its plan already posted.
 - The run started on slide 5 needs the environment approval; in tm-testing Danny approves it himself, so the run can finish during the talk. Approve it when slide 7 reaches the gate screenshot, so the audience sees the gate for real.
 - Pre-pull the screenshots into `assets/` so the deck works offline.
-- A backup: screenshots of a finished run in case the live run is slow or fails (one ES run took 9 minutes to start a container).
+- Optional: one fresh screenshot of a finished merge run in the new format (slide 7), and recapture the `/deploy` replies if their wording changed.
 - Check runner start times on the day.
 - Reference runs in tm-testing: PR #299 (deploy first, then merge) and #300 (label has no effect).
 

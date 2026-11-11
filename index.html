@@ -186,12 +186,12 @@
   <section class="slide" data-time="2:30">
     <div class="eyebrow">In practice 1 of 3</div>
     <h2>A PR plans what it changes</h2>
-    <p class="point">The plan comment lists the changed stacks and ends with how to deploy them.</p>
+    <p class="point">The plan comment lists the changed stacks. Its footer explains how to test before merging, and that merging is the standard way.</p>
     <div class="shots two">
-      <figure class="shot"><div class="frame"><img src="assets/plan-footer.png" alt="Plan comment with the Deploy footer"></div><figcaption>Plan comment with the Deploy footer</figcaption></figure>
+      <figure class="shot"><div class="frame"><img src="assets/plan-footer-expanded.png" alt="Plan comment with the footer expanded: how to test before merging (exceptions only)"></div><figcaption>Plan comment, footer expanded: testing before merge is for exceptions</figcaption></figure>
       <figure class="shot"><div class="frame"><img src="assets/nothing-to-plan.png" alt="A PR with nothing to plan"></div><figcaption>Docs-only PR: nothing to plan, about 1.5 minutes</figcaption></figure>
     </div>
-    <aside class="notes"><b>Say:</b> Show the stack list in the comment, then the footer. Contrast: a docs-only PR plans nothing. <b>While this slide is up:</b> start the real run in tm-testing in a second window (comment /deploy development on the prepared demo PR).</aside>
+    <aside class="notes"><b>Say:</b> Show the stack list in the comment, then the footer. Contrast: a docs-only PR plans nothing.</aside>
   </section>
 
   <!-- 6. /deploy -->
@@ -226,7 +226,7 @@
         <p class="muted" style="font-size:20px">Then you approve the new plan.</p>
       </div>
     </div>
-    <aside class="notes"><b>Say:</b> The saved plan from the PR is applied. The Up run header links back to the PR with a hover card. <b>Switch to the real run:</b> approve at the gate and show where it is (applying or done).</aside>
+    <aside class="notes"><b>Say:</b> The saved plan from the PR is applied. The Up run header links back to the PR with a hover card. The run waits for the environment approval, same gate as before.</aside>
   </section>
 
   <!-- 8. Stale -->
@@ -283,21 +283,21 @@
   <!-- 12. Rollout -->
   <section class="slide" data-time="1:00">
     <div class="eyebrow">Rollout</div>
-    <h2>Live today, and where to follow it</h2>
-    <p class="point">Repos opt in gradually, starting with our own.</p>
+    <h2>Rolling out, and where to follow it</h2>
+    <p class="point">Repos opt in gradually, in small batches.</p>
     <div class="cols">
       <div class="card yes">
-        <h3>Live</h3>
-        <ul><li><b>6 repos</b> opted in, one of them ExpSquads (<code>ts-ai</code>)</li><li style="font-size:20px" class="muted">ts-general, ts-security, ts-databases, ts-foundation, ts-frontend, ts-ai</li><li>New repos from the template start on the new workflows</li></ul>
+        <h3>Where we are</h3>
+        <ul><li><b>The first repos</b> already run on the new workflows, in both GH Orgs</li><li>New repos from the template start on the new workflows</li></ul>
         <h3 style="margin-top:18px">Next</h3>
-        <ul><li>The other <code>ts-*</code> repos in small batches, then the ExpSquads repos</li></ul>
+        <ul><li>The remaining repos follow in small batches, one PR per repo</li></ul>
       </div>
       <div class="card">
         <h3>Questions or something looks off</h3>
         <ul><li>Slack: <code>#proj-iac-pipeline-velocity-improvements</code></li><li>Usage guide with screenshots: <a href="https://sosafegmbh.atlassian.net/wiki/spaces/COPS/pages/4247486574/IaC+Pipeline+Velocity+Improvements+New+features+and+usage+guide" target="_blank" rel="noopener">IaC Pipeline Velocity Improvements</a> (Confluence)</li></ul>
       </div>
     </div>
-    <aside class="notes"><b>State as of the runbook of 11 Nov</b> (6 repos plus the template; about 24 of 30 not started). <b>Update on the day:</b> check COPS page 4317249537, Status at a glance, and adjust the Live and Next lists.</aside>
+    <aside class="notes"><b>Deliberately no repo list or count on the slide.</b> State as of the runbook, read 11 Nov: 29 repos in scope; 6 live (5 merged plus 1 verified) plus the template; 21 opt-in PRs open as drafts, waiting for the batches to be agreed; 2 not started (ts-services is handled by hand). <b>Update on the day:</b> check COPS page 4317249537, Status at a glance, and adjust the Live and Next lists.</aside>
   </section>
 
   <!-- 13. Q&A -->

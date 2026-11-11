@@ -178,8 +178,15 @@
       <div class="card"><div class="num">2</div><h3>Apply what you reviewed</h3><p>The reviewed plan is applied on merge, through the usual approvals. No second plan.</p><div class="tickets">APPOPS-1258</div></div>
       <div class="card"><div class="num">3</div><h3>Test by comment</h3><p>Comment <code>/deploy development</code> to try a change from the PR. Same approval gate. Not the normal way to ship.</p><div class="tickets">APPOPS-1260</div></div>
     </div>
-    <p class="muted" style="margin-top:26px;font-size:20px">Small extra: the bot pushes the <code>tofu fmt</code> commit for you (APPOPS-661).</p>
-    <aside class="notes"><b>Say:</b> One sentence each, the next three slides show them. <b>Set the frame here:</b> the announcement said "deploy by comment", but the normal path is merge, then the approved deployment (change 2). <code>/deploy</code> is the tool for trying a change in development and for emergencies. Mention auto-format as a one-liner: the bot pushes the format commit to the PR branch.</aside>
+    <h3 style="margin:20px 0 8px;font-size:24px">What you get</h3>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;font-size:20px;line-height:1.35">
+      <div><b>Faster.</b> Plan and apply jobs about 30% shorter in ts&#8209;security.</div>
+      <div><b>Less runner time.</b> Only changed stacks are planned; docs-only PRs plan nothing.</div>
+      <div><b>Safer.</b> The plan you reviewed is the plan applied; a plan that went stale is refused.</div>
+      <div><b>Less manual work.</b> Test from the PR, and the bot pushes the <code>tofu fmt</code> commit.</div>
+    </div>
+    <p class="muted" style="margin:12px 0 0;font-size:15px">Median job time in the repo with the most data, 1 Oct to 9 Nov, before and after it opted in. Approval wait is not included.</p>
+    <aside class="notes"><b>Say:</b> One sentence each, the next three slides show them. <b>Set the frame here:</b> the announcement said "deploy by comment", but the normal path is merge, then the approved deployment (change 2). <code>/deploy</code> is the tool for trying a change in development and for emergencies. Then the benefits strip. <b>Speed:</b> ts-security plan jobs 137 s to 95 s (350 jobs) and up jobs 125 s to 88 s (51 jobs), median job time from the v2 report (1 Oct to 9 Nov); other repos are faster too but with small samples. Be honest: this is job time, not the whole deploy; approval wait was 68% of deploy time in ts-security, which is why automatic deployments are the next step. <b>Less runner time</b> follows from planning only changed stacks and shorter jobs; we have not measured runner minutes. Auto-format: the bot pushes the format commit to the PR branch.</aside>
   </section>
 
   <!-- 5. Plan only what changed -->

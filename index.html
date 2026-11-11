@@ -176,10 +176,10 @@
     <div class="three-up">
       <div class="card"><div class="num">1</div><h3>Plan only what changed</h3><p>The PR plan covers the stacks it touches. Docs-only PRs plan nothing.</p><div class="tickets">APPOPS-1259</div></div>
       <div class="card"><div class="num">2</div><h3>Apply what you reviewed</h3><p>The reviewed plan is applied on merge, through the usual approvals. No second plan.</p><div class="tickets">APPOPS-1258</div></div>
-      <div class="card"><div class="num">3</div><h3>Deploy by comment</h3><p>Comment <code>/deploy development</code> on the PR. Same approval gate.</p><div class="tickets">APPOPS-1260</div></div>
+      <div class="card"><div class="num">3</div><h3>Test by comment</h3><p>Comment <code>/deploy development</code> to try a change from the PR. Same approval gate. Not the normal way to ship.</p><div class="tickets">APPOPS-1260</div></div>
     </div>
     <p class="muted" style="margin-top:26px;font-size:20px">Small extra: the bot pushes the <code>tofu fmt</code> commit for you (APPOPS-661).</p>
-    <aside class="notes"><b>Say:</b> One sentence each, the next three slides show them. Mention auto-format as a one-liner: the bot pushes the format commit to the PR branch.</aside>
+    <aside class="notes"><b>Say:</b> One sentence each, the next three slides show them. <b>Set the frame here:</b> the announcement said "deploy by comment", but the normal path is merge, then the approved deployment (change 2). <code>/deploy</code> is the tool for trying a change in development and for emergencies. Mention auto-format as a one-liner: the bot pushes the format commit to the PR branch.</aside>
   </section>
 
   <!-- 5. Plan only what changed -->
@@ -197,22 +197,23 @@
   <!-- 6. /deploy -->
   <section class="slide" data-time="3:00">
     <div class="eyebrow">In practice 2 of 3</div>
-    <h2>Deploy from the PR</h2>
-    <p class="point">Try the change in development without leaving the PR.</p>
+    <h2>Try it from the PR</h2>
+    <p class="point">Test a change in development without leaving the PR. Shipping still goes through merge.</p>
     <div class="shots grid4">
       <figure class="shot"><div class="frame"><img src="assets/deploy-replies.png" alt="Engineer comments and bot replies"></div><figcaption>Comment and bot reply</figcaption></figure>
       <figure class="shot"><div class="frame"><img src="assets/dependent-stacks.png" alt="Dependent stacks: the bot names the waiting ones"></div><figcaption>Dependent stacks: the bot names the waiting ones</figcaption></figure>
       <figure class="shot"><div class="frame"><img src="assets/rejected-1.png" alt="A rejected request"></div><figcaption>Rejected requests get a short reply</figcaption></figure>
       <figure class="shot"><div class="frame"><img src="assets/superseded.png" alt="Previous dispatch marked as superseded"></div><figcaption>A new push marks earlier replies as superseded</figcaption></figure>
     </div>
-    <aside class="notes"><b>Say:</b> Write access is required. Closed, merged and fork PRs are refused. A new push marks earlier replies as superseded. Stacks that depend on each other deploy in layers; the bot names the waiting ones and you run /deploy again. Same environment approval as before.</aside>
+    <p style="margin-top:16px;font-size:21px"><span class="pill warn">Use sparingly</span>For testing in development and for emergencies. Deploying before merge makes the environment differ from <code>main</code>, so keep it the exception.</p>
+    <aside class="notes"><b>Say:</b> This is the manual command, wrapped in a comment. Use it to test in development or in an emergency; it is not the routine way to deploy, because an environment deployed from an unmerged branch drifts from main and the saved plan goes stale at merge (next slides). Write access is required. Closed, merged and fork PRs are refused. A new push marks earlier replies as superseded. Stacks that depend on each other deploy in layers; the bot names the waiting ones and you run /deploy again. Same environment approval as before.</aside>
   </section>
 
   <!-- 7. Merge applies reviewed plan -->
   <section class="slide" data-time="2:30">
     <div class="eyebrow">In practice 3 of 3</div>
     <h2>Merge applies the plan you reviewed</h2>
-    <p class="point">You tried it in development with <code>/deploy</code>. Now you merge: the merge run applies the plan from the PR, it does not plan again.</p>
+    <p class="point">This is the normal path. You review, merge, and the merge run applies the plan from the PR. It does not plan again.</p>
     <div class="cols" style="grid-template-columns: 1.25fr 1fr; flex:1; min-height:0">
       <figure class="shot"><div class="frame"><img src="assets/merge-waiting.png" alt="After the merge: the deployment waits for approval"></div><figcaption>After the merge: the Up run waits for the environment approval</figcaption></figure>
       <div class="card">
@@ -232,7 +233,7 @@
   <section class="slide" data-time="2:00">
     <div class="eyebrow">When it goes wrong, on purpose</div>
     <h2>"Saved plan is stale"</h2>
-    <p class="point">It happens when the stack changed after the PR plan was made: you deployed it with <code>/deploy</code> before merging, or someone changed it outside the pipeline. The pipeline refuses to apply the old plan, and the fix is one click.</p>
+    <p class="point">It happens when the stack changed after the PR plan was made: you deployed it with <code>/deploy</code> before merging (one more reason to merge instead), or someone changed it outside the pipeline. The pipeline refuses to apply the old plan, and the fix is one click.</p>
     <div class="shots two">
       <figure class="shot"><div class="frame"><img src="assets/stale-failed.png" alt="First attempt: the up job fails"></div><figcaption>First attempt: the Up job fails</figcaption></figure>
       <figure class="shot"><div class="frame"><img src="assets/rerun-green.png" alt="After Re-run all jobs"></div><figcaption>Re-run all jobs: planned again, nothing left to apply</figcaption></figure>
@@ -257,18 +258,14 @@
   </section>
 
   <!-- 10. Opt in -->
-  <section class="slide" data-time="1:00">
+  <section class="slide" data-time="0:45">
     <div class="eyebrow">Adopting it</div>
     <h2>How a repo opts in</h2>
-    <p class="point">One PR per repo, opened by AppOps. Nothing for the repo team to do.</p>
-    <div class="three-up">
-      <div class="card"><div class="num">1</div><h3>We open the PR</h3><p>It switches the repo to the new workflows.</p></div>
-      <div class="card"><div class="num">2</div><h3>You review and merge</h3><p>A normal PR with a normal code owner review.</p></div>
-      <div class="card"><div class="num">3</div><h3>The next PR uses it</h3><p>Plan only what changed, <code>/deploy</code>, apply the reviewed plan.</p></div>
-    </div>
-    <p style="margin-top:28px"><span class="pill">Rollback</span>Revert that PR and the repo is back on the old workflows. Repos that have not opted in are unaffected.</p>
+    <p class="point">AppOps opens and merges one PR per repo. Nothing for the repo team to do.</p>
+    <p style="font-size:24px;margin-top:28px">After that, the repo's next PR plans only what changed and applies the reviewed plan.</p>
+    <p style="margin-top:34px"><span class="pill">Rollback</span>Easy: revert that PR and the repo is back on the old workflows. Repos that have not opted in are unaffected.</p>
     <p style="margin-top:14px;font-size:21px"><span class="pill">Also bundled</span>The <b>exclude-stacks</b> workflow, which some repos already have. ExpSquads repos get it in the same PR.</p>
-    <aside class="notes"><b>Say:</b> Repo teams do not need to do anything beyond the normal review. <b>Details if asked:</b> the PR adds the v2 plan caller (with <code>deploy_from_comment: true</code>), the merge caller (the new Up workflow with the merged PR number) and <code>pr-deploy.yml</code>, which turns on <code>/deploy</code>. The ts-general PR (#370) is the template. <b>One extra, a later addition:</b> the exclude-stacks workflow (adds or removes stacks in an environment's exclude list, as a PR) already exists in most platform-engineering ts-* repos but not in the ExpSquads org, and since it is easy to bundle, those repos get it in the same PR (APPOPS-600). PRs that were open when a repo switched were planned by the old workflow and are planned again on merge, with a new approval.</aside>
+    <aside class="notes"><b>Say:</b> Keep it short: we open and merge the PR, repo teams do nothing. <b>Details if asked:</b> the PR adds the v2 plan caller (with <code>deploy_from_comment: true</code>), the merge caller (the new Up workflow with the merged PR number) and <code>pr-deploy.yml</code>, which turns on <code>/deploy</code>. The ts-general PR (#370) is the template. <b>One extra, a later addition:</b> the exclude-stacks workflow (adds or removes stacks in an environment's exclude list, as a PR) already exists in most platform-engineering ts-* repos but not in the ExpSquads org, and since it is easy to bundle, those repos get it in the same PR (APPOPS-600). PRs that were open when a repo switched were planned by the old workflow and are planned again on merge, with a new approval.</aside>
   </section>
 
   <!-- 11. Optional: under the hood -->
@@ -308,6 +305,7 @@
     <div class="eyebrow">Questions</div>
     <h2>Q&amp;A</h2>
     <ul class="qa-list" style="margin-top:14px">
+      <li class="muted">Should I deploy every change with <code>/deploy</code>? No. Merge and approve is the default. <code>/deploy</code> is for testing in development and for emergencies.</li>
       <li class="muted">Can I opt my repo in? AppOps opens the PR; ask in the channel.</li>
       <li class="muted">What about <code>ts-dns</code>? It stays on the old plan for now; <code>/deploy</code> works there too.</li>
       <li class="muted">Do I still have to approve every deployment? Yes, the environment approval before an apply is unchanged. Automatic deployments are the next thing on our radar.</li>

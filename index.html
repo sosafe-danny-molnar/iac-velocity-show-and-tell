@@ -100,6 +100,30 @@
   .pill.warn { background: var(--warn-soft); color: var(--warn); }
   .qa-list li { font-size: 22px; }
 
+  /* Verification slides */
+  .edge { display: grid; grid-template-columns: 300px 1fr; gap: 24px; flex: 1; min-height: 0; }
+  .big { font-size: 96px; font-weight: 800; line-height: 1; color: var(--accent); letter-spacing: -0.03em; }
+  .big-label { font-size: 22px; font-weight: 600; margin: 6px 0 18px; }
+  .edge .card p { font-size: 19px; line-height: 1.35; margin: 0 0 12px; }
+  .examples { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 1fr); gap: 14px 18px; min-height: 0; }
+  .ex { background: var(--card); border: 1px solid var(--line); border-left: 5px solid var(--accent); border-radius: 10px; padding: 12px 16px; }
+  .ex b { display: block; font-size: 19px; margin-bottom: 4px; }
+  .ex.wide { grid-column: 1 / -1; }
+  .ex span { font-size: 17px; line-height: 1.32; color: var(--muted); }
+  .why-cols { display: grid; grid-template-columns: 1fr 1.25fr; gap: 24px; flex: 1; min-height: 0; margin-top: 52px; }
+  .why-cols .card { padding: 22px 26px; }
+  .why-cols .card h3 { font-size: 24px; margin-bottom: 10px; }
+  .why-cols p, .why-cols li { font-size: 19px; line-height: 1.35; }
+  .why-cols li { margin-bottom: 9px; }
+  .sizes { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; margin: 4px 0 14px; font-size: 19px; }
+  .sizes b { text-align: right; font-variant-numeric: tabular-nums; }
+  .meme { position: absolute; top: 32px; right: 72px; height: 200px; border-radius: 10px; border: 1px solid var(--line); box-shadow: 0 2px 8px rgba(15,18,24,.08); }
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 18px 22px; }
+  .stat .n { font-size: 54px; font-weight: 800; line-height: 1.05; color: var(--accent); letter-spacing: -0.02em; }
+  .stat .l { font-size: 20px; font-weight: 600; margin-top: 4px; }
+  .stat .d { font-size: 16px; color: var(--muted); margin-top: 4px; line-height: 1.3; }
+
   /* Chrome */
   #bar { position: absolute; left: 0; bottom: 0; height: 6px; background: var(--accent); width: 0; transition: width .2s; }
   #count { position: absolute; right: 28px; bottom: 18px; font-size: 16px; color: var(--muted); }
@@ -286,18 +310,78 @@
     <aside class="notes"><b>Say:</b> The bold part is the what, the rest is the why and what to do. Read the bold ones and let people ask about any. The label point matters because people use it today: in the new workflows non-infrastructure PRs plan nothing on their own.</aside>
   </section>
 
-  <!-- 11.: Development and Testing -->
-  <section class="slide" data-time="3:00">
-    <div class="eyebrow">Implementation and testing <span class="pill warn" style="margin-left:10px">optional</span></div>
-    <h2>It is tested like code</h2>
-    <p class="point">Plan reuse and re-plan rules, and the test harness behind them.</p>
-    <div class="cols">
-      <div class="card"><h3>Tests</h3><ul><li>Script tests against a fake Terraspace</li><li>Workflow tests for the job structure</li><li>Real runs in a test repo before merge</li></ul></div>
+  <!-- 10. Edge cases -->
+  <section class="slide" data-time="1:30">
+    <div class="eyebrow">Implementation and testing</div>
+    <h2>The edge cases we found</h2>
+    <p class="point">Deciding whether a reviewed plan is still safe to apply has many corners. We listed them and tested each one for real.</p>
+    <div class="edge">
+      <div class="card">
+        <div class="big">~90</div>
+        <div class="big-label">end-to-end scenarios across all test rounds</div>
+        <p>Plus 146 unit tests, and 47 script tests against a fake Terraspace, in CI.</p>
+        <p>An earlier run, on the first version of the code, found 5 issues. All were fixed before the final run.</p>
+      </div>
+      <div class="examples">
+        <div class="ex"><b>A stack reads another stack's outputs</b><span>Applying the first changes its outputs, so OpenTofu refuses the second's saved plan. It is re-planned and applied in the same run.</span></div>
+        <div class="ex"><b>Merged while the PR plan still runs</b><span>The merge run waits for the plan instead of failing. GitHub also lists new runs with a delay.</span></div>
+        <div class="ex"><b>Someone changed the same stack first</b><span>Your reviewed plan is outdated, so it is planned again from main. A change to another stack is not.</span></div>
+        <div class="ex"><b>Another PR adds your stack to staging</b><span>Your PR is checked again on merge. Otherwise the change would never reach staging.</span></div>
+        <div class="ex wide"><b>The saved plan is gone</b><span>Plan files expire after a while. If they are missing at merge, it plans again instead of failing.</span></div>
+      </div>
     </div>
-    <aside class="notes"><b>Miklos's slot.</b> Replace the placeholder content with his material. If he does not join, press O to skip this slide or cut it.</aside>
+    <aside class="notes"><b>Say:</b> The rule "apply the reviewed plan, unless it is no longer safe" sounds simple, but "no longer safe" has many corners. We wrote them down as a test catalogue and ran every one in tm-testing, a sandbox repo whose test stacks contain only <code>terraform_data</code> (no cost, no real resources). Pick two examples, not all five: the dependent stacks one and the "someone changed the same stack first" one land best. <b>The ~90 vs. the 53 on slide 12:</b> the ~90 are every round, including code that never shipped in that form; the final run re-ran the 53 that apply to the merged code. Left out by design: 8 legacy tests (v2 does not touch the old workflows), 6 tests of removed inputs, 6 ts-general canary checks; the rest were earlier versions of tests re-run under other IDs. The ~90 are the distinct end-to-end scenarios on the verification page (COPS 4290281485) across all rounds: legacy behaviour, merge guards, stack-by-stack apply, timing, stale plans, scoping, v2, secrets, the ts-general canaries, and the 13 added for the last two fixes. <b>5 issues:</b> F3 (dependent stacks could never deploy from their own plan), F4 (merging right after the plan could fail because GitHub lists the run late), a false warning on every scoped plan, a Slack error, and a Semgrep finding that all secrets were passed on. <b>The expired plan</b> is T8a: we deleted the PR's plan artifact by hand to simulate expiry, and the merge planned again with an "expired" reason.</aside>
   </section>
 
-  <!-- 12. Rollout -->
+  <!-- 11. Why AI verification -->
+  <section class="slide" data-time="1:30">
+    <div class="eyebrow">Implementation and testing</div>
+    <img class="meme" src="assets/ai-reviewing-ai-meme.png" alt="Meme: AI reviewing AI-generated code, a man putting a medal on himself">
+    <h2>Verifying a change too big to review</h2>
+    <p class="point">A change this size could hardly be reviewed meaningfully line by line.</p>
+    <div class="why-cols">
+      <div class="card">
+        <h3>The change</h3>
+        <div class="sizes">
+          <b>+2,781</b><span>core: scoped plans, reuse on merge</span>
+          <b>+285</b><span>dependent stacks</span>
+          <b>+2,589</b><span>unit tests and script tests</span>
+        </div>
+        <p>5,655 new lines in 33 files, stacked in three PRs.</p>
+        <p>The agent (Claude Code) ran the test catalogue in the sandbox repo: opened the PRs, read every plan, approved, merged, and wrote a report linking every run.</p>
+      </div>
+      <div class="card yes">
+        <h3>The guardrails</h3>
+        <ul>
+          <li><b>Sandbox only.</b> The test repo, development and staging, stacks that create nothing real. No deletes, force-pushes or destroys.</li>
+          <li><b>A written test plan.</b> Exact commits, the expected result of each test, and how to read the evidence.</li>
+          <li><b>Read before approving.</b> Approve only the exact plan that will be applied; the approval comment quotes the run, stacks and change counts.</li>
+          <li><b>Hooks block risky commands.</b> Approvals and merges the hook cannot verify, and any direct apply.</li>
+          <li><b>People decide the irreversible.</b> Deleting an artifact, changing an expected result.</li>
+        </ul>
+      </div>
+    </div>
+    <aside class="notes"><b>Say:</b> 5,600 lines is more than anyone can review with real attention, and the risky part is not the syntax but the behaviour on GitHub with real merges and approvals. So I wrote the test plan and let an AI agent execute it. The point is not that the AI is trusted; it is boxed in. <b>Guardrails:</b> the written rules guided it; the hooks are local Claude Code hooks that refuse a command before it runs, for example an approval whose repo or environments they cannot read, a merge into a repo given as a variable, or the lowercase apply command. Everything the agent claimed links to a PR or run, so it can be checked. It used my GitHub account, so every approval shows under my name with its evidence comment.</aside>
+  </section>
+
+  <!-- 12. Verification in numbers -->
+  <section class="slide" data-time="1:00">
+    <div class="eyebrow">Implementation and testing</div>
+    <h2>The AI verification in numbers</h2>
+    <p class="point">The final run on 16 October, against the code that was merged.</p>
+    <div class="stats">
+      <div class="stat"><div class="n">53 / 53</div><div class="l">tests passed</div><div class="d">every test that applies to the final code</div></div>
+      <div class="stat"><div class="n">66</div><div class="l">test PRs</div><div class="d">60 merged, 6 closed by design</div></div>
+      <div class="stat"><div class="n">144</div><div class="l">pipeline runs</div><div class="d">74 PR plans, 70 deployments</div></div>
+      <div class="stat"><div class="n">78</div><div class="l">approval decisions</div><div class="d">each after reading the plan; 1 rejection, on purpose</div></div>
+      <div class="stat"><div class="n">5.5 h</div><div class="l">start to last merge</div><div class="d">13:05 to 18:35 UTC, one session</div></div>
+      <div class="stat"><div class="n">8</div><div class="l">findings</div><div class="d">1 low-severity code issue, 0 unsafe applies</div></div>
+    </div>
+    <p style="margin-top:22px;font-size:21px"><span class="pill">Context</span>An earlier run had already found and fixed 5 issues. 3 decisions by a person, 5 commands blocked by the guardrail hooks.</p>
+    <aside class="notes"><b>Say:</b> The numbers are from tm-testing's own run history for 16 Oct. The three human decisions: the sandbox had changed since the test plan was written (another team had deployed there), one expected result could not hold so we added a test, and one test needed a plan artifact deleted, which I did by hand. <b>The 8 findings:</b> one code issue (a PR retargeted to main was briefly planned against the old base; the apply stayed correct), two wording nits, one coverage gap (the TFLint comment cleanup never triggered), one expected result in my test plan that could not hold, the agent's own setup slips (four, all fixed with normal pushes), and two GitHub quirks. <b>The earlier run:</b> on the original #596 code and its follow-up (9 to 13 Oct, about 70 end-to-end tests), before the v2 split. Its 5 issues: dependent stacks could never deploy from their own plan (F3), a merge right after the plan could fail (F4), a false warning on every scoped plan (O17), a Slack error (O10), and all secrets passed on (S1, found on #669). So the final run found little because those were already fixed. <b>Takeaway:</b> the AI did the long, repetitive part reliably; the test plan and the guardrails set its quality.</aside>
+  </section>
+
+  <!-- 13. Rollout -->
   <section class="slide" data-time="1:00">
     <div class="eyebrow">Rollout</div>
     <h2>Rolling out, and where to follow it</h2>
@@ -317,7 +401,7 @@
     <aside class="notes"><b>Slide shows status per org, no repo list or count.</b> As of 12 Nov Danny: PE org done once ts-developer-experience, be-ms-slack-analytics-agent, ts-services, ts-messaging-platform and ts-analytics merge (imminent); ES org underway. Verify on the tracker before presenting; if any of those five is still open, say "nearly done". State as of the runbook, read 11 Nov: 29 repos in scope; 6 live (5 merged plus 1 verified) plus the template; 21 opt-in PRs open as drafts, waiting for the batches to be agreed; 2 not started (ts-services is handled by hand). <b>Wave 1 (next batch) is being merged as of 12 Nov</b>, so the live numbers above are already out of date; the tracker (Confluence 4388978828) has the current ones. <b>Opt-in, if asked:</b> AppOps opens and merges one PR per repo, repo teams do nothing; revert that PR to go back to the old workflows. The PR adds the v2 plan caller (<code>deploy_from_comment: true</code>), the merge caller and <code>pr-deploy.yml</code>; ts-general #370 is the template. The exclude-stacks workflow (add or remove stacks in an environment's exclude list, as a PR) exists in most platform-engineering ts-* repos but not in the ExpSquads org, so those repos get it in the same PR (APPOPS-600). PRs open when a repo switched are planned again on merge, with a new approval. <b>Update on the day:</b> check COPS page 4317249537, Status at a glance, and adjust the Live and Next lists.</aside>
   </section>
 
-  <!-- 13. Q&A -->
+  <!-- 14. Q&A -->
   <section class="slide" data-time="5:00">
     <div class="eyebrow">Questions</div>
     <h2>Q&amp;A</h2>

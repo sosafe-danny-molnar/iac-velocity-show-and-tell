@@ -1,6 +1,6 @@
 # Storyline: Faster, safer infrastructure PRs
 
-Engineering Show & Tell. Slot about 30 min including Q&A; talk about 20 min, Q&A 5, optional Miklos part 3 (taken from the buffer).
+Engineering Show & Tell. Slot about 30 min including Q&A; talk about 22 min including the Miklos part (4 min), Q&A 5.
 
 Audience: all of engineering. Many have never touched a `ts-*` repo, so every term is explained once and the demo carries the middle.
 
@@ -72,10 +72,13 @@ Conventions: **Point** = the one thing the audience should take away. **Visual**
 **Visual:** the ts-general opt-in PR (#370) as the template: v2 callers, the flag, `pr-deploy.yml`.
 **Say:** keep it short. Technical details (callers, `pr-deploy.yml`, ts-general template) are in the speaker notes.
 
-## 11. Optional, Miklos: under the hood (about 3:00)
+## 11. Miklos: edge cases and AI verification (about 4:00, three slides)
 
-**Point:** it is tested like code.
-**Visual:** plan reuse and re-plan rules; the test harness (script tests against a fake terraspace, workflow tests). If Miklos does not join, this is one slide or cut.
+**Slide 10, the edge cases we found (1:30).** Point: "is the reviewed plan still safe to apply?" has many corners, and each was tested for real. Visual: ~90 end-to-end scenarios (distinct IDs on COPS 4290281485 across all rounds, including the 13 added for the last two fixes), plus 146 unit tests and 47 script tests in CI, 5 issues found and fixed; five example cards (dependent stacks, merge while the plan runs, same stack changed first, stack added to staging by another PR, saved plan expired).
+
+**Slide 11, verifying a change too big to review (1:30).** Point: 5,655 new lines in 33 files (#669 +2,781, #670 +285, #671 +2,589) could hardly be reviewed meaningfully, so an AI agent (Claude Code) ran the test catalogue end to end. Visual: the change sizes and what the agent did; the guardrails (sandbox only, written test plan, read the exact plan before approving with an evidence comment, hooks that block unverifiable approvals and merges and any direct apply, people decide the irreversible).
+
+**Slide 12, the AI verification in numbers (1:00).** Visual: the final run on 16 Oct: 53/53 tests passed, 66 test PRs (60 merged, 6 closed), 144 pipeline runs (74 PR plans, 70 deployments), 78 approval decisions (1 rejection on purpose), 5.5 h, 8 findings (1 low-severity code issue, 0 unsafe applies); 3 human decisions, 5 commands blocked by hooks. Source: tm-testing run history and the v2e retest report.
 
 ## 12. Rollout and where to follow it (1:00)
 
@@ -95,7 +98,7 @@ Likely questions, with the answer ready:
 
 ## Timing
 
-Talk: 0:30 + 1:00 + 1:30 + 1:30 + 2:30 + 3:00 + 2:30 + 2:00 + 1:30 + 0:45 + 1:00 = 17:45. Q&A 5:00. Optional Miklos 3:00. Total with everything: 26:00. Cut slide 9 or 11 first if the dry run runs long.
+Talk: 0:30 + 1:00 + 1:30 + 1:30 + 2:30 + 3:00 + 2:30 + 2:00 + 1:30 + 0:45 + 1:00 = 17:45. Q&A 5:00. Miklos 4:00. Total: 27:00. Cut slide 9 or 11 first if the dry run runs long.
 
 ## Demo prep (mostly obsolete since 11 Nov, no live run)
 

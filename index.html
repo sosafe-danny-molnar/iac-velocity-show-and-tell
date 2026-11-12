@@ -90,6 +90,10 @@
   .three-up .card.minor h3 { font-size: 23px; }
   .three-up .card.minor p { font-size: 20px; }
   .three-up .card.minor .num { background: var(--muted); }
+  .after-cols { display: grid; grid-template-columns: 1.35fr 1fr; gap: 22px; margin-top: 8px; }
+  .imp { margin: 0; padding-left: 22px; font-size: 21px; line-height: 1.32; }
+  .imp li { margin-bottom: 11px; }
+  .imp li.minor, .imp li.minor b { color: var(--muted); font-size: 19px; }
   .benefits { margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--line); }
 
   .pill { display: inline-block; padding: 3px 12px; border-radius: 999px; font-size: 17px; font-weight: 600; background: var(--accent-soft); color: var(--accent); margin-right: 8px; }
@@ -115,7 +119,7 @@
   <section class="slide title" data-time="0:30">
     <div class="eyebrow">Engineering Show &amp; Tell</div>
     <h1>Faster, safer infrastructure PRs</h1>
-    <div class="sub">Apply and deploy what you reviewed, check only what changed, deploy by comment.</div>
+    <div class="sub">Apply and deploy what you reviewed, check only what changed, test deployments with a comment.</div>
     <div class="by">Danny Molnar &amp; Miklos Vincze &middot; AppOps, part of IDE (Infrastructure and Development Enablement)</div>
     <aside class="notes"><b>Say:</b> One sentence on who I am. This is about how we deploy infrastructure. Four sentences from now you will know if it concerns you.</aside>
   </section>
@@ -175,24 +179,33 @@
   </section>
 
   <!-- 4. After -->
-  <section class="slide" data-time="1:30">
+  <section class="slide" data-time="2:30">
     <div class="eyebrow">After</div>
-    <h2>Three changes, shipped together</h2>
-    <p class="point">Opt-in workflows plus a PR comment command.</p>
-    <div class="three-up">
-      <div class="card"><div class="num">1</div><h3>Plan only what changed</h3><p>The PR plan covers the stacks it touches. Docs-only PRs plan nothing.</p></div>
-      <div class="card"><div class="num">2</div><h3>Apply what you reviewed</h3><p>The reviewed plan is applied on merge, through the usual approvals. No second plan.</p></div>
-      <div class="card minor"><div class="num">3</div><h3>Test by comment</h3><p>Comment <code>/deploy development</code> to try a change from the PR. It asks for an approval too. Not the normal way to ship.</p></div>
+    <h2>Several improvements shipped together</h2>
+    <!-- <p class="point">Opt-in workflows plus a PR comment command.</p> -->
+    <div class="after-cols">
+      <div class="card">
+        <h3>What changed</h3>
+        <ul class="imp">
+          <li><b>Plan only what changed.</b> The PR plan covers the stacks it touches. Docs-only PRs plan nothing.</li>
+          <li><b>Apply what you reviewed.</b> The reviewed plan is applied on merge, through the usual approvals. No second plan.</li>
+          <li><b>Exclude-stacks workflow.</b> Add or remove stacks in an environment's exclude list through a PR. Repos that did not have it get it with the opt-in.</li>
+          <li><b>Auto-format.</b> The bot pushes the <code>tofu fmt</code> commit to your PR branch.</li>
+          <li class="minor"><b>Test by comment.</b> <code>/deploy development</code> tries a change from the PR. Asks for an approval too. Not the normal way to ship.</li>
+        </ul>
+      </div>
+      <div class="card yes">
+        <h3>What you get</h3>
+        <ul class="imp">
+          <li><b>Faster.</b> Plan and apply jobs shorter.</li>
+          <li><b>Less runner time.</b> Only changed stacks are planned; docs-only PRs plan nothing.</li>
+          <li><b>Safer.</b> The plan you reviewed is the plan applied; a plan that went stale is refused.</li>
+          <li><b>Less manual work.</b> Formatting and exclude-list changes are handled for you.</li>
+        </ul>
+      </div>
     </div>
-    <h3 class="benefits" style="margin-bottom:8px;font-size:24px">What you get</h3>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:18px;font-size:20px;line-height:1.35">
-      <div><b>Faster.</b> Plan and apply jobs about 30% shorter in ts&#8209;security.</div>
-      <div><b>Less runner time.</b> Only changed stacks are planned; docs-only PRs plan nothing.</div>
-      <div><b>Safer.</b> The plan you reviewed is the plan applied; a plan that went stale is refused.</div>
-      <div><b>Less manual work.</b> Test from the PR, and the bot pushes the <code>tofu fmt</code> commit.</div>
-    </div>
-    <p class="muted" style="margin:12px 0 0;font-size:15px">Median job time in the repo with the most data, 1 Oct to 9 Nov, before and after it opted in. Approval wait is not included.</p>
-    <aside class="notes"><b>Say:</b> One sentence each, the next three slides show them. <b>Set the frame here:</b> the announcement said "deploy by comment", but the normal path is merge, then the approved deployment (change 2). <code>/deploy</code> is the tool for trying a change in development and for emergencies. Then the benefits strip. <b>Speed:</b> ts-security plan jobs 137 s to 95 s (350 jobs) and up jobs 125 s to 88 s (51 jobs), median job time from the v2 report (1 Oct to 9 Nov); other repos are faster too but with small samples. Be honest: this is job time, not the whole deploy; approval wait was 68% of deploy time in ts-security, which is why automatic deployments are the next step. <b>Less runner time</b> follows from planning only changed stacks and shorter jobs; we have not measured runner minutes. Auto-format: the bot pushes the format commit to the PR branch.</aside>
+    <!-- <p class="muted" style="margin:12px 0 0;font-size:15px">Median job time in the repo with the most data, 1 Oct to 9 Nov, before and after it opted in. Approval wait is not included.</p> -->
+    <aside class="notes"><b>Say:</b> One sentence each; the next slides show plan-only-changed, <code>/deploy</code> and the merge apply. <b>Exclude-stacks (explain here, about 30 s):</b> a workflow that adds or removes stacks in an environment's exclude list as a PR (APPOPS-600); it already exists in most platform-engineering ts-* repos, not in the ExpSquads org, so those repos get it in the same opt-in PR. <b>Set the frame here:</b> the announcement said "deploy by comment", but the normal path is merge, then the approved deployment (change 2). <code>/deploy</code> is the tool for trying a change in development and for emergencies. Then the benefits strip. <b>Speed:</b> ts-security plan jobs 137 s to 95 s (350 jobs) and up jobs 125 s to 88 s (51 jobs), median job time from the v2 report (1 Oct to 9 Nov); other repos are faster too but with small samples. Be honest: this is job time, not the whole deploy; approval wait was 68% of deploy time in ts-security, which is why automatic deployments are the next step. <b>Less runner time</b> follows from planning only changed stacks and shorter jobs; we have not measured runner minutes. Auto-format: the bot pushes the format commit to the PR branch.</aside>
   </section>
 
   <!-- 5. Plan only what changed -->
@@ -202,9 +215,9 @@
     <p class="point">The plan comment lists the changed stacks. Its footer explains how to test before merging, and that merging is the standard way.</p>
     <div class="shots two">
       <figure class="shot"><div class="frame"><img src="assets/plan-footer-expanded.png" alt="Plan comment with the footer expanded: how to test before merging (exceptions only)"></div><figcaption>Plan comment, footer expanded: testing before merge is for exceptions</figcaption></figure>
-      <!-- <figure class="shot"><div class="frame"><img src="assets/nothing-to-plan.png" alt="A PR with nothing to plan"></div><figcaption>Docs-only PR: nothing to plan, about 1.5 minutes</figcaption></figure> -->
+      <figure class="shot"><div class="frame"><img src="assets/nothing-to-plan.png" alt="A PR with nothing to plan"></div><figcaption>Docs-only PR: nothing to plan, about 1.5 minutes</figcaption></figure>
     </div>
-    <p class="muted" style="margin:14px 0 0;font-size:19px">Changes to shared files (modules, <code>Terrafile</code>, base config) still plan every stack.</p>
+    <p class="muted" style="margin:14px 0 0;font-size:19px">Changes to shared files (modules, base config, Tofu provider config changes) still plan every stack.</p>
     <aside class="notes"><b>Say:</b> Show the stack list in the comment, then the footer. Contrast: a docs-only PR plans nothing. Be upfront: shared files such as app/modules, config/terraform and the Terrafile give a full plan of every stack, and a stack that depends on a changed stack is not planned unless it changed itself.</aside>
   </section>
 
@@ -233,14 +246,15 @@
       <div class="card">
         <h3>It plans again only when it must</h3>
         <ul>
-          <li>Main changed the same stacks</li>
+          <li>Main changed something the plan depends on</li>
           <li>The plan expired</li>
           <li>The PR changed <code>.github/</code></li>
+          <li>You re-run the workflow</li>
         </ul>
         <p class="muted" style="font-size:20px">Then you approve the new plan.</p>
       </div>
     </div>
-    <aside class="notes"><b>Say:</b> The saved plan from the PR is applied. The Up run header links back to the PR with a hover card. The run waits for the environment approval, same gate as before.</aside>
+    <aside class="notes"><b>Say:</b> The saved plan from the PR is applied. The Up run header links back to the PR with a hover card. The run waits for the environment approval, same gate as before. <b>If asked:</b> an unrelated change on main (a different stack) does not trigger a new plan; shared paths, the stack's own files or its dependencies do. A retry always re-plans, which is the fix on the next slide.</aside>
   </section>
 
   <!-- 8. Stale -->
@@ -272,17 +286,6 @@
     <aside class="notes"><b>Say:</b> The bold part is the what, the rest is the why and what to do. Read the bold ones and let people ask about any. The label point matters because people use it today: in the new workflows non-infrastructure PRs plan nothing on their own.</aside>
   </section>
 
-  <!-- 10. Opt in -->
-  <section class="slide" data-time="0:45">
-    <div class="eyebrow">Adopting it</div>
-    <h2>How a repo opts in</h2>
-    <p class="point">AppOps opens and merges one PR per repo. Nothing for the repo team to do.</p>
-    <p style="font-size:24px;margin-top:28px">After that, the repo's next PR plans only what changed and applies the reviewed plan.</p>
-    <p style="margin-top:34px"><span class="pill">Rollback</span>Easy: revert that PR and the repo is back on the old workflows. Repos that have not opted in are unaffected.</p>
-    <p style="margin-top:14px;font-size:21px"><span class="pill">Also bundled</span>The <b>exclude-stacks</b> workflow, which some repos already have. ExpSquads repos get it in the same PR.</p>
-    <aside class="notes"><b>Say:</b> Keep it short: we open and merge the PR, repo teams do nothing. <b>Details if asked:</b> the PR adds the v2 plan caller (with <code>deploy_from_comment: true</code>), the merge caller (the new Up workflow with the merged PR number) and <code>pr-deploy.yml</code>, which turns on <code>/deploy</code>. The ts-general PR (#370) is the template. <b>One extra, a later addition:</b> the exclude-stacks workflow (adds or removes stacks in an environment's exclude list, as a PR) already exists in most platform-engineering ts-* repos but not in the ExpSquads org, and since it is easy to bundle, those repos get it in the same PR (APPOPS-600). PRs that were open when a repo switched were planned by the old workflow and are planned again on merge, with a new approval.</aside>
-  </section>
-
   <!-- 11.: Development and Testing -->
   <section class="slide" data-time="3:00">
     <div class="eyebrow">Implementation and testing <span class="pill warn" style="margin-left:10px">optional</span></div>
@@ -311,7 +314,7 @@
         <ul><li>Slack: <code>#proj-iac-pipeline-velocity-improvements</code></li><li>Usage guide with screenshots: <a href="https://sosafegmbh.atlassian.net/wiki/spaces/COPS/pages/4247486574/IaC+Pipeline+Velocity+Improvements+New+features+and+usage+guide" target="_blank" rel="noopener">IaC Pipeline Velocity Improvements</a> (Confluence)</li></ul>
       </div>
     </div>
-    <aside class="notes"><b>Slide shows status per org, no repo list or count.</b> As of 12 Nov Danny: PE org done once ts-developer-experience, be-ms-slack-analytics-agent, ts-services, ts-messaging-platform and ts-analytics merge (imminent); ES org underway. Verify on the tracker before presenting; if any of those five is still open, say "nearly done". State as of the runbook, read 11 Nov: 29 repos in scope; 6 live (5 merged plus 1 verified) plus the template; 21 opt-in PRs open as drafts, waiting for the batches to be agreed; 2 not started (ts-services is handled by hand). <b>Wave 1 (next batch) is being merged as of 12 Nov</b>, so the live numbers above are already out of date; the tracker (Confluence 4388978828) has the current ones. <b>Update on the day:</b> check COPS page 4317249537, Status at a glance, and adjust the Live and Next lists.</aside>
+    <aside class="notes"><b>Slide shows status per org, no repo list or count.</b> As of 12 Nov Danny: PE org done once ts-developer-experience, be-ms-slack-analytics-agent, ts-services, ts-messaging-platform and ts-analytics merge (imminent); ES org underway. Verify on the tracker before presenting; if any of those five is still open, say "nearly done". State as of the runbook, read 11 Nov: 29 repos in scope; 6 live (5 merged plus 1 verified) plus the template; 21 opt-in PRs open as drafts, waiting for the batches to be agreed; 2 not started (ts-services is handled by hand). <b>Wave 1 (next batch) is being merged as of 12 Nov</b>, so the live numbers above are already out of date; the tracker (Confluence 4388978828) has the current ones. <b>Opt-in, if asked:</b> AppOps opens and merges one PR per repo, repo teams do nothing; revert that PR to go back to the old workflows. The PR adds the v2 plan caller (<code>deploy_from_comment: true</code>), the merge caller and <code>pr-deploy.yml</code>; ts-general #370 is the template. The exclude-stacks workflow (add or remove stacks in an environment's exclude list, as a PR) exists in most platform-engineering ts-* repos but not in the ExpSquads org, so those repos get it in the same PR (APPOPS-600). PRs open when a repo switched are planned again on merge, with a new approval. <b>Update on the day:</b> check COPS page 4317249537, Status at a glance, and adjust the Live and Next lists.</aside>
   </section>
 
   <!-- 13. Q&A -->

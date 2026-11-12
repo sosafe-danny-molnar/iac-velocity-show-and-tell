@@ -202,7 +202,7 @@
     <p class="point">The plan comment lists the changed stacks. Its footer explains how to test before merging, and that merging is the standard way.</p>
     <div class="shots two">
       <figure class="shot"><div class="frame"><img src="assets/plan-footer-expanded.png" alt="Plan comment with the footer expanded: how to test before merging (exceptions only)"></div><figcaption>Plan comment, footer expanded: testing before merge is for exceptions</figcaption></figure>
-      <figure class="shot"><div class="frame"><img src="assets/nothing-to-plan.png" alt="A PR with nothing to plan"></div><figcaption>Docs-only PR: nothing to plan, about 1.5 minutes</figcaption></figure>
+      <!-- <figure class="shot"><div class="frame"><img src="assets/nothing-to-plan.png" alt="A PR with nothing to plan"></div><figcaption>Docs-only PR: nothing to plan, about 1.5 minutes</figcaption></figure> -->
     </div>
     <p class="muted" style="margin:14px 0 0;font-size:19px">Changes to shared files (modules, <code>Terrafile</code>, base config) still plan every stack.</p>
     <aside class="notes"><b>Say:</b> Show the stack list in the comment, then the footer. Contrast: a docs-only PR plans nothing. Be upfront: shared files such as app/modules, config/terraform and the Terrafile give a full plan of every stack, and a stack that depends on a changed stack is not planned unless it changed itself.</aside>
@@ -283,13 +283,12 @@
     <aside class="notes"><b>Say:</b> Keep it short: we open and merge the PR, repo teams do nothing. <b>Details if asked:</b> the PR adds the v2 plan caller (with <code>deploy_from_comment: true</code>), the merge caller (the new Up workflow with the merged PR number) and <code>pr-deploy.yml</code>, which turns on <code>/deploy</code>. The ts-general PR (#370) is the template. <b>One extra, a later addition:</b> the exclude-stacks workflow (adds or removes stacks in an environment's exclude list, as a PR) already exists in most platform-engineering ts-* repos but not in the ExpSquads org, and since it is easy to bundle, those repos get it in the same PR (APPOPS-600). PRs that were open when a repo switched were planned by the old workflow and are planned again on merge, with a new approval.</aside>
   </section>
 
-  <!-- 11. Optional: under the hood -->
-  <section class="slide" data-time="3:00" data-optional="1">
-    <div class="eyebrow">Under the hood <span class="pill warn" style="margin-left:10px">optional</span></div>
+  <!-- 11.: Development and Testing -->
+  <section class="slide" data-time="3:00">
+    <div class="eyebrow">Implementation and testing <span class="pill warn" style="margin-left:10px">optional</span></div>
     <h2>It is tested like code</h2>
     <p class="point">Plan reuse and re-plan rules, and the test harness behind them.</p>
     <div class="cols">
-      <div class="card"><h3>Plan reuse</h3><ul><li>Saved plan from the PR</li><li>When main moved or the plan expired, plan again</li><li>Dependent stacks defer and re-plan</li></ul></div>
       <div class="card"><h3>Tests</h3><ul><li>Script tests against a fake Terraspace</li><li>Workflow tests for the job structure</li><li>Real runs in a test repo before merge</li></ul></div>
     </div>
     <aside class="notes"><b>Miklos's slot.</b> Replace the placeholder content with his material. If he does not join, press O to skip this slide or cut it.</aside>

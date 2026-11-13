@@ -175,7 +175,7 @@
   </section>
 
   <!-- 3. Before -->
-  <section class="slide" data-time="1:30">
+  <section class="slide" data-time="1:00">
     <div class="eyebrow">Before</div>
     <h2>Reviewing and deploying were separate work</h2>
     <p class="point">Every step repeated work the PR had already done.</p>
@@ -195,15 +195,12 @@
       <span class="step warn">Manual Command</span><span class="arrow">&rarr;</span>
       <span class="step warn">Pick branch, environments, stacks</span>
     </div>
-    <ul style="margin-top:14px">
-      <li>The plan you reviewed is not the plan that gets applied</li>
-      <li>A one-stack change still plans everything</li>
-    </ul>
-    <aside class="notes"><b>Say:</b> After merge it is planned again, so what is applied is not exactly what was reviewed. A one-stack change still plans every stack. And trying a change before merge means leaving the PR for the Actions tab.</aside>
+    <p style="margin-top:34px;font-size:24px">The plan you review is not the plan you apply, and a one-stack change still plans every stack.</p>
+    <aside class="notes"><b>Say:</b> Two problems, marked in red: the plan you reviewed is not the plan that gets applied, and a one-stack change still plans everything. After merge it is planned again, so what is applied is not exactly what was reviewed. A one-stack change still plans every stack. And trying a change before merge means leaving the PR for the Actions tab.</aside>
   </section>
 
   <!-- 4. After -->
-  <section class="slide" data-time="2:30">
+  <section class="slide" data-time="2:00">
     <div class="eyebrow">After</div>
     <h2>Several improvements shipped together</h2>
     <!-- <p class="point">Opt-in workflows plus a PR comment command.</p> -->
@@ -214,7 +211,7 @@
           <li><b>Plan only what changed.</b> The PR plan covers the stacks it touches. Docs-only PRs plan nothing.</li>
           <li><b>Apply what you reviewed.</b> The reviewed plan is applied on merge, through the usual approvals. No second plan.</li>
           <li><b>Exclude-stacks workflow.</b> Add or remove stacks in an environment's exclude list through a PR. Repos that did not have it get it with the opt-in.</li>
-          <li><b>Auto-format.</b> The bot pushes the <code>tofu fmt</code> commit to your PR branch.</li>
+          <li><b>Auto-format.</b> The bot pushes the <code>tofu fmt</code> commit to your PR branch; <code>git pull</code> before your next push.</li>
           <li class="minor"><b>Test by comment.</b> <code>/deploy development</code> tries a change from the PR. Asks for an approval too. Not the normal way to ship.</li>
         </ul>
       </div>
@@ -233,7 +230,7 @@
   </section>
 
   <!-- 5. Plan only what changed -->
-  <section class="slide" data-time="2:30">
+  <section class="slide" data-time="2:00">
     <div class="eyebrow">In practice 1 of 3</div>
     <h2>A PR plans what it changes</h2>
     <p class="point">The plan comment lists the changed stacks. Its footer explains how to test before merging, and that merging is the standard way.</p>
@@ -246,22 +243,20 @@
   </section>
 
   <!-- 6. /deploy -->
-  <section class="slide" data-time="3:00">
+  <section class="slide" data-time="2:00">
     <div class="eyebrow">In practice 2 of 3</div>
     <h2>Try it from the PR</h2>
     <p class="point">Test a change in development without leaving the PR. Shipping still goes through merge.</p>
-    <div class="shots grid4">
+    <div class="shots two">
       <figure class="shot"><div class="frame"><img src="assets/deploy-replies.png" alt="Engineer comments and bot replies"></div><figcaption>Comment and bot reply</figcaption></figure>
       <figure class="shot"><div class="frame"><img src="assets/dependent-stacks.png" alt="Dependent stacks: the bot names the waiting ones"></div><figcaption>Dependent stacks: the bot names the waiting ones</figcaption></figure>
-      <figure class="shot"><div class="frame"><img src="assets/rejected-1.png" alt="A rejected request"></div><figcaption>Rejected requests get a short reply</figcaption></figure>
-      <figure class="shot"><div class="frame"><img src="assets/superseded.png" alt="Previous dispatch marked as superseded"></div><figcaption>A new push marks earlier replies as superseded</figcaption></figure>
     </div>
     <p style="margin-top:16px;font-size:21px"><span class="pill warn">Use sparingly</span>For testing in development and for emergencies. Deploying before merge makes the environment differ from <code>main</code>, so keep it the exception.</p>
-    <aside class="notes"><b>Say:</b> This is the manual command, wrapped in a comment. Use it to test in development or in an emergency; it is not the routine way to deploy, because an environment deployed from an unmerged branch drifts from main and the saved plan goes stale at merge (next slides). Write access is required. Closed, merged and fork PRs are refused. A new push marks earlier replies as superseded. Stacks that depend on each other deploy in layers; the bot names the waiting ones and you run /deploy again. Same environment approval as before.</aside>
+    <aside class="notes"><b>Say:</b> This is the manual command, wrapped in a comment. Use it to test in development or in an emergency; it is not the routine way to deploy, because an environment deployed from an unmerged branch drifts from main and the saved plan goes stale at merge (next slides). Write access is required. Closed, merged and fork PRs are refused. A new push marks earlier replies as superseded (screenshots of rejected and superseded replies: assets/rejected-1.png, assets/superseded.png). Stacks that depend on each other deploy in layers; the bot names the waiting ones and you run /deploy again. Same environment approval as before.</aside>
   </section>
 
   <!-- 7. Merge applies reviewed plan -->
-  <section class="slide" data-time="2:30">
+  <section class="slide" data-time="2:00">
     <div class="eyebrow">In practice 3 of 3</div>
     <h2>Merge applies the plan you reviewed</h2>
     <p class="point">This is the normal path. You review, merge, and the merge run applies the plan from the PR. It does not plan again.</p>
@@ -282,10 +277,10 @@
   </section>
 
   <!-- 8. Stale -->
-  <section class="slide" data-time="2:00">
+  <section class="slide" data-time="1:30">
     <div class="eyebrow">When it goes wrong, on purpose</div>
     <h2>"Saved plan is stale"</h2>
-    <p class="point">It happens when the stack changed after the PR plan was made: you deployed it with <code>/deploy</code> before merging (one more reason to merge instead), or someone changed it outside the pipeline. OpenTofu refuses to apply the old plan, and the fix is one click.</p>
+    <p class="point">It happens when the stack changed after the PR plan was made, for example after a <code>/deploy</code> before merging. OpenTofu refuses the old plan, and the fix is one click.</p>
     <div class="shots two">
       <figure class="shot"><div class="frame"><img src="assets/stale-failed.png" alt="First attempt: the up job fails"></div><figcaption>First attempt: the Up job fails</figcaption></figure>
       <figure class="shot"><div class="frame"><img src="assets/rerun-green.png" alt="After Re-run all jobs"></div><figcaption>Re-run all jobs: planned again, nothing left to apply</figcaption></figure>
@@ -295,7 +290,7 @@
   </section>
 
   <!-- 9. What teams notice -->
-  <section class="slide" data-time="1:30">
+  <section class="slide" data-time="1:15">
     <div class="eyebrow">Good to know</div>
     <h2>What teams will notice</h2>
     <p class="point">A short, honest list: what you will see, why, and what to do.</p>
@@ -303,7 +298,6 @@
       <li><b>An extra approval when main moved.</b> If someone changed the same stacks after your review, the saved plan is no longer safe. It is planned again and you approve the new plan.</li>
       <li><b>A stale plan after <code>/deploy</code>.</b> Deploying from the branch changes the environment, so the saved plan is outdated at merge. The run fails once: click <i>Re-run all jobs</i> and it finishes green.</li>
       <li><b>Dependent stacks need a second <code>/deploy</code>.</b> Stacks that read each other's outputs deploy in layers. The bot names the waiting ones; run <code>/deploy</code> again once the first layer is applied.</li>
-      <li><b>A format commit from the bot.</b> It may push a <code>tofu fmt</code> commit to your PR branch. Run <code>git pull</code> before your next push.</li>
       <li><b>The <code>infra:no_changes</code> label is still fine to use.</b> It makes no difference now: PRs that do not touch infrastructure plan nothing on their own.</li>
       <li><b>Better notifications are on their way.</b> The old Slack message after a deploy is not in the new workflows yet; an improved notification system is under way and will follow.</li>
     </ul>
